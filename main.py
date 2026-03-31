@@ -1,12 +1,13 @@
-import pickle
-import numpy as np
 import pandas as pd
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import Literal
-from sklearn.preprocessing import StandardScaler
-from sklearn.cluster import KMeans
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.ensemble import GradientBoostingClassifier
 
 app = FastAPI(
     title="Customer Churn Prediction API",
