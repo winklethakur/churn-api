@@ -1,6 +1,6 @@
 # 📉 Customer Segmentation & Retention Analysis
 ### Telecom Churn Prediction · End-to-End ML Project
-> Predict which telecom customers will churn, segment them into actionable groups, and serve real-time predictions via a production-ready REST API — all in one project.
+> Predict which telecom customers will churn, segment them into actionable groups, and serve real-time predictions via a production-ready REST API all in one project.
 
 ---
 
@@ -22,7 +22,7 @@
 
 ## Problem Statement
 
-Customer churn is one of the most costly problems in the telecom industry — acquiring a new customer costs **5–7× more** than retaining an existing one. This project builds a **machine learning system** that:
+Customer churn is one of the most costly problems in the telecom industry, acquiring a new customer costs **5–7× more** than retaining an existing one. This project builds a **machine learning system** that:
 
 1. Predicts the probability of a customer churning
 2. Segments customers by behaviour (New / Mid-tenure / Loyal)
@@ -52,7 +52,7 @@ Customer churn is one of the most costly problems in the telecom industry — ac
 | `class_weight='balanced'` | Logistic Regression, Random Forest |
 | No native weight param — handled via balanced training data ratio | Gradient Boosting |
 
-> Note: `scale_pos_weight` is an XGBoost parameter. Sklearn's `GradientBoostingClassifier` does not support it — class imbalance is addressed upstream via the balanced split strategy.
+> Note: `scale_pos_weight` is an XGBoost parameter. Sklearn's `GradientBoostingClassifier` does not support it, class imbalance is addressed upstream via the balanced split strategy.
 
 ### 4. Models Trained & Compared
 
@@ -197,7 +197,7 @@ docker run -p 8000:8000 -e PORT=8000 churn-api
 
 ## Notes
 
-- Model is a `scikit-learn` Pipeline serialised with `pickle` — the same preprocessing steps used during training are automatically applied at inference time.
+- Model is a `scikit-learn` Pipeline serialised with `pickle`, the same preprocessing steps used during training are automatically applied at inference time.
 - Batch endpoint accepts up to **100 customers** per request.
 - CORS is enabled for all origins — suitable for frontend integration.
 
