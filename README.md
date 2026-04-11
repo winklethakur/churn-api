@@ -29,7 +29,7 @@ Customer churn is one of the most costly problems in the telecom industry, acqui
 3. Recommends a targeted retention strategy per customer
 4. Exposes all of this through a live REST API
 
-**Dataset:** IBM Telco Customer Churn — 7,043 customers, 20 features
+**Dataset:** IBM Telco Customer Churn - 7,043 customers, 20 features
 
 ---
 
