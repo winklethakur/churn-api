@@ -1,47 +1,105 @@
-# Churn Prediction API
+# 📉 Customer Segmentation & Retention Analysis
+### Telecom Churn Prediction · End-to-End ML Project
+> Predict which telecom customers will churn, segment them into actionable groups, and serve real-time predictions via a production-ready REST API — all in one project.
 
-FastAPI service for predicting customer churn and returning segment + retention strategy.
+---
 
-## Endpoints
+## Project Structure
+
+```
+├── notebook/
+│   ├── Customer_Churn_Prediction.ipynb   # Full ML pipeline & analysis
+│   └── churn_model.pkl                   # Serialised best model
+│
+└── api/
+    ├── main.py                           # FastAPI application
+    ├── requirements.txt                  # Python dependencies
+    ├── Dockerfile                        # Container definition
+    └── render.yaml                       # Render deployment config
+```
+
+---
+
+## Problem Statement
+
+Customer churn is one of the most costly problems in the telecom industry — acquiring a new customer costs **5–7× more** than retaining an existing one. This project builds a **machine learning system** that:
+
+1. Predicts the probability of a customer churning
+2. Segments customers by behaviour (New / Mid-tenure / Loyal)
+3. Recommends a targeted retention strategy per customer
+4. Exposes all of this through a live REST API
+
+**Dataset:** IBM Telco Customer Churn — 7,043 customers, 20 features
+
+---
+
+## ML Pipeline (Notebook)
+
+### 1. Exploratory Data Analysis
+- Class imbalance: ~26% churners vs ~74% non-churners
+- Key churn drivers visualised: Contract type, Internet service, Payment method
+- Churn rate by tenure, monthly charges, and contract length
+
+### 2. Preprocessing
+- Fixed `TotalCharges` type mismatch (raw string → float)
+- `OneHotEncoder` for 16 categorical features
+- `StandardScaler` for 3 numerical features
+- Sklearn `Pipeline` + `ColumnTransformer` to prevent data leakage
+
+### 3. Class Imbalance Handling
+| Technique | Applied To |
+|-----------|-----------|
+| `class_weight='balanced'` | Logistic Regression, Random Forest |
+| No native weight param — handled via balanced training data ratio | Gradient Boosting |
+
+> Note: `scale_pos_weight` is an XGBoost parameter. Sklearn's `GradientBoostingClassifier` does not support it — class imbalance is addressed upstream via the balanced split strategy.
+
+### 4. Models Trained & Compared
+
+| Model | ROC-AUC | Churn Recall |
+|-------|---------|-------------|
+| Logistic Regression | ~0.835 | ~0.80 |
+| Random Forest | ~0.813 | ~0.47 |
+| **Gradient Boosting** | **~0.840** | **~0.54** |
+
+> **Gradient Boosting selected** — best AUC overall. Logistic Regression had the highest recall but Gradient Boosting gave the best generalisation across all metrics.
+
+### 5. Feature Importance
+Top churn predictors (from Gradient Boosting):
+- **Contract type** — single biggest driver; month-to-month customers churn at 3× the rate of annual contract customers
+- **Tenure** — shorter tenure = higher churn risk
+- **Monthly charges** — higher bills correlate with churn
+- **Internet service** — Fiber optic customers churn significantly more than DSL
+- **OnlineSecurity / TechSupport** — customers without these churn more (upsell opportunities)
+
+### 6. Customer Segmentation (KMeans Clustering)
+Clustered customers into **3 behavioural segments** using tenure, monthly charges, and total charges. Elbow method used to select k=3.
+
+| Segment | Avg Tenure | Churn Risk | Characteristics |
+|---------|-----------|-----------|----------------|
+| New Customer | ≤ 12 months | 🔴 Very High (~47%) | Short tenure, high monthly charges, often month-to-month |
+| Mid-tenure | 13–36 months | 🟡 Low (~15%) | Moderate tenure, mixed contract types |
+| Loyal Customer | 37+ months | 🟢 Very Low (~12%) | Long tenure, lower charges, often on annual contracts |
+
+---
+
+## API — Live Deployment
+
+The trained model is served via **FastAPI**, containerised with **Docker**, and deployed on **Render**.
+
+### Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/` | Health check |
-| GET | `/health` | Health check |
-| POST | `/predict` | Predict churn for one customer |
-| POST | `/predict/batch` | Predict churn for up to 100 customers |
-| GET | `/docs` | Swagger UI (interactive docs) |
+| `GET` | `/` | Health check |
+| `GET` | `/health` | Service status |
+| `POST` | `/predict` | Predict churn for a single customer |
+| `POST` | `/predict/batch` | Batch predictions (up to 100 customers) |
 
-## Run locally
-
-```bash
-pip install -r requirements.txt
-uvicorn main:app --reload
-```
-
-Open http://localhost:8000/docs to test via Swagger UI.
-
-## Deploy to Render (free tier)
-
-1. Push this folder to a GitHub repository
-2. Go to https://render.com → New → Web Service
-3. Connect your GitHub repo
-4. Render auto-detects `render.yaml` — just click **Deploy**
-5. Your API will be live at `https://your-app-name.onrender.com`
-
-**Important:** Upload `churn_model.pkl` to the repo root alongside `main.py`.
-
-## Deploy to Railway
-
-1. Push this folder to a GitHub repository
-2. Go to https://railway.app → New Project → Deploy from GitHub
-3. Railway auto-detects `Procfile` — click **Deploy**
-4. Your API will be live at the URL Railway provides
-
-## Example request
+### Sample Request
 
 ```bash
-curl -X POST "https://your-app.onrender.com/predict" \
+curl -X POST "https://<your-render-url>/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "gender": "Female",
@@ -66,28 +124,81 @@ curl -X POST "https://your-app.onrender.com/predict" \
   }'
 ```
 
-## Example response
+### Sample Response
 
 ```json
 {
   "churn_prediction": 1,
   "churn_label": "Will churn",
-  "churn_probability": 0.8243,
+  "churn_probability": 0.8241,
   "risk_level": "High",
   "segment": "New customer",
   "retention_strategy": "Offer onboarding discount or switch-to-annual-contract incentive. High priority if churn risk > 50%."
 }
 ```
 
-## Project structure
+### Risk Levels
 
+| Probability | Risk Level |
+|-------------|-----------|
+| ≥ 0.70 | 🔴 High |
+| 0.40 – 0.69 | 🟡 Medium |
+| < 0.40 | 🟢 Low |
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Data & ML | Python, Pandas, NumPy, scikit-learn, XGBoost |
+| Visualisation | Matplotlib, Seaborn |
+| API Framework | FastAPI + Pydantic v2 |
+| Server | Uvicorn (ASGI) |
+| Containerisation | Docker |
+| Deployment | Render |
+
+---
+
+## Run Locally
+
+### Option A — Python
+
+```bash
+git clone https://github.com/<your-username>/<repo-name>.git
+cd <repo-name>/api
+
+pip install -r requirements.txt
+uvicorn main:app --reload
 ```
-churn_api/
-├── main.py              # FastAPI app
-├── churn_model.pkl      # Trained model (add this yourself)
-├── requirements.txt     # Python dependencies
-├── render.yaml          # Render deployment config
-├── Procfile             # Railway deployment config
-├── .gitignore
-└── README.md
+
+Visit `http://127.0.0.1:8000/docs` for the interactive Swagger UI.
+
+### Option B — Docker
+
+```bash
+cd api
+docker build -t churn-api .
+docker run -p 8000:8000 -e PORT=8000 churn-api
 ```
+
+---
+
+## Key ML Concepts Demonstrated
+
+- **End-to-end pipeline** — raw data → trained model → deployed API
+- **Handling class imbalance** — without resampling (SMOTE); instead using cost-sensitive learning
+- **Sklearn Pipelines** — preprocessor + model in one object, preventing data leakage
+- **Model evaluation** — AUC-ROC, precision, recall, F1 (not just accuracy)
+- **Unsupervised segmentation** — KMeans clustering with elbow method for k selection
+- **Production deployment** — Dockerised FastAPI with batch prediction support
+
+---
+
+## Notes
+
+- Model is a `scikit-learn` Pipeline serialised with `pickle` — the same preprocessing steps used during training are automatically applied at inference time.
+- Batch endpoint accepts up to **100 customers** per request.
+- CORS is enabled for all origins — suitable for frontend integration.
+
+---
