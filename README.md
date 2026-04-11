@@ -1,10 +1,17 @@
 # 📉 Customer Segmentation & Retention Analysis
 ### Telecom Churn Prediction · End-to-End ML Project
-> Predict which telecom customers will churn, segment them into actionable groups, and serve real-time predictions via a production-ready REST API all in one project.
+
+![Python](https://img.shields.io/badge/Python-3.10-blue?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.110-009688?logo=fastapi&logoColor=white)
+![scikit-learn](https://img.shields.io/badge/scikit--learn-1.4.2-F7931E?logo=scikit-learn&logoColor=white)
+![XGBoost](https://img.shields.io/badge/XGBoost-2.0.3-EC4E20)
+[![Deployed on Render](https://img.shields.io/badge/Deployed-Render-46E3B7?logo=render&logoColor=white)](https://churn-api-wor4.onrender.com/)
+
+> Predict which telecom customers will churn, segment them into actionable groups, and serve real-time predictions via a production-ready REST API — all in one project.
 
 ---
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 ├── notebook/
@@ -20,20 +27,20 @@
 
 ---
 
-## Problem Statement
+## 🎯 Problem Statement
 
-Customer churn is one of the most costly problems in the telecom industry, acquiring a new customer costs **5–7× more** than retaining an existing one. This project builds a **machine learning system** that:
+Customer churn is one of the most costly problems in the telecom industry — acquiring a new customer costs **5–7× more** than retaining an existing one. This project builds a **machine learning system** that:
 
 1. Predicts the probability of a customer churning
 2. Segments customers by behaviour (New / Mid-tenure / Loyal)
 3. Recommends a targeted retention strategy per customer
 4. Exposes all of this through a live REST API
 
-**Dataset:** IBM Telco Customer Churn - 7,043 customers, 20 features
+**Dataset:** IBM Telco Customer Churn — 7,043 customers, 20 features
 
 ---
 
-## ML Pipeline (Notebook)
+## 🔬 ML Pipeline (Notebook)
 
 ### 1. Exploratory Data Analysis
 - Class imbalance: ~26% churners vs ~74% non-churners
@@ -52,7 +59,7 @@ Customer churn is one of the most costly problems in the telecom industry, acqui
 | `class_weight='balanced'` | Logistic Regression, Random Forest |
 | No native weight param — handled via balanced training data ratio | Gradient Boosting |
 
-> Note: `scale_pos_weight` is an XGBoost parameter. Sklearn's `GradientBoostingClassifier` does not support it, class imbalance is addressed upstream via the balanced split strategy.
+> Note: `scale_pos_weight` is an XGBoost parameter. Sklearn's `GradientBoostingClassifier` does not support it — class imbalance is addressed upstream via the balanced split strategy.
 
 ### 4. Models Trained & Compared
 
@@ -62,7 +69,7 @@ Customer churn is one of the most costly problems in the telecom industry, acqui
 | Random Forest | ~0.813 | ~0.47 |
 | **Gradient Boosting** | **~0.840** | **~0.54** |
 
-> **Gradient Boosting selected** — best AUC overall. Logistic Regression had the highest recall but Gradient Boosting gave the best generalisation across all metrics.
+> ✅ **Gradient Boosting selected** — best AUC overall. Logistic Regression had the highest recall but Gradient Boosting gave the best generalisation across all metrics.
 
 ### 5. Feature Importance
 Top churn predictors (from Gradient Boosting):
@@ -83,7 +90,7 @@ Clustered customers into **3 behavioural segments** using tenure, monthly charge
 
 ---
 
-## API — Live Deployment
+## 🚀 API — Live Deployment
 
 The trained model is served via **FastAPI**, containerised with **Docker**, and deployed on **Render**.
 
@@ -99,7 +106,7 @@ The trained model is served via **FastAPI**, containerised with **Docker**, and 
 ### Sample Request
 
 ```bash
-curl -X POST "https://<your-render-url>/predict" \
+curl -X POST "https://churn-api-wor4.onrender.com/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "gender": "Female",
@@ -147,7 +154,7 @@ curl -X POST "https://<your-render-url>/predict" \
 
 ---
 
-## Tech Stack
+## 🛠️ Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
@@ -160,31 +167,8 @@ curl -X POST "https://<your-render-url>/predict" \
 
 ---
 
-## Run Locally
 
-### Option A — Python
-
-```bash
-git clone https://github.com/<your-username>/<repo-name>.git
-cd <repo-name>/api
-
-pip install -r requirements.txt
-uvicorn main:app --reload
-```
-
-Visit `http://127.0.0.1:8000/docs` for the interactive Swagger UI.
-
-### Option B — Docker
-
-```bash
-cd api
-docker build -t churn-api .
-docker run -p 8000:8000 -e PORT=8000 churn-api
-```
-
----
-
-## Key ML Concepts Demonstrated
+## 💡 Key ML Concepts Demonstrated
 
 - **End-to-end pipeline** — raw data → trained model → deployed API
 - **Handling class imbalance** — without resampling (SMOTE); instead using cost-sensitive learning
@@ -195,10 +179,12 @@ docker run -p 8000:8000 -e PORT=8000 churn-api
 
 ---
 
-## Notes
+## 📌 Notes
 
-- Model is a `scikit-learn` Pipeline serialised with `pickle`, the same preprocessing steps used during training are automatically applied at inference time.
+- Model is a `scikit-learn` Pipeline serialised with `pickle` — the same preprocessing steps used during training are automatically applied at inference time.
 - Batch endpoint accepts up to **100 customers** per request.
 - CORS is enabled for all origins — suitable for frontend integration.
 
 ---
+
+*Built with ❤️ · IBM Telco Churn Dataset*
